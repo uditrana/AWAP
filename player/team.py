@@ -22,7 +22,7 @@ class Company(object):
         self.boothCoords = []
         self.front_line = None
         self.back_line = None
-        self.cached_line_size = None
+        self.cached_line_size = 1
     
     def __repr__(self):
         return str(self.name)+",  " + str(self.points)+",  "+str(self.lineCoords)+",  "+str(self.boothCoords)+",  "+str(self.front_line)+",  "+str(self.back_line)
@@ -199,7 +199,7 @@ class Team(object):
                     continue
                 new_tile = self.board[new_row][new_col]
                 if new_tile.get_booth() is None:
-                    edge_weight = max(self.thresholds[new_row][new_col], 1)
+                    edge_weight = max(self.cachedThresholds[new_row][new_col], 1)
                     distance, _ = distances[new_row][new_col]
                     if min_distance + edge_weight < distance:
                         path = min_path + [(new_row, new_col)]
@@ -212,12 +212,12 @@ class Team(object):
             company = target_locations[coordinate]
             row, col = coordinate
             distance, path = distances[row][col]
-            score = company.size / (distance + company.line_size)
+            score = company.points / (distance + company.cached_line_size)
             if score > max_score:
                 max_score = score
                 best_path = path
                 best_company = company
-        return best_path, best_company
+        return best_path, best_company if best_path is None else None
 
     def step(self, visible_board, states, score):
         """
@@ -272,10 +272,10 @@ class Team(object):
                     print("Case 3")
                     self.at_starts[i] = False
                     print(state.x, state.y)
-                    bfs_result = self.BFS(state.x, state.y)
+                    bfs_result = self.ClosestCompany(state.x, state.y)
                     if bfs_result == None:
                         self.unvisited_companies = copy.deepcopy(self.all_companies_list)
-                        bfs_result = self.BFS(state.x, state.y)
+                        bfs_result = self.ClosestCompany(state.x, state.y)
                     # print(self.unvisited_companies)
                     # print(self.all_companies_list)
                     print(self.all_companies_list)
@@ -284,7 +284,8 @@ class Team(object):
                     print(path)
                     self.current_paths[i] = path
                     self.current_companies[i] = company
-                    self.unvisited_companies.remove(company)
+                    if company in self.unvisited_companies:
+                        self.unvisited_companies.remove(company)
                     (next_x, next_y) = path.pop(0)
                     directions.append(get_direction(state.x, state.y, next_x, next_y))
                     state = states[i]
