@@ -58,45 +58,57 @@ class Team(object):
                         new_frontier.append((new_row, new_col, new_path))
             frontier = new_frontier
 
-    # def ClosestCompany(self, row, col):
-    #     target_locations = {c.back_line: c for c in self.unvisited_companies}
-    #
-    #     rows, cols = len(self.board), len(self.board[0])
-    #     distances = [[(math.inf, None)] * cols for _ in range(rows)]
-    #     distances[row][col] = (0, [])
-    #     visited = set()
-    #     dirs = [(1, 0), (-1, 0), (0, 1), (0, -1)]
-    #
-    #     while True:
-    #         min_distance = math.inf
-    #         min_coordinate = None
-    #         min_path = None
-    #         for row in range(rows):
-    #             for col in range(cols):
-    #                 distance, path = distances[row][col]
-    #                 if distance < min_distance and (row, col) not in visited:
-    #                     min_distance = distance
-    #                     min_coordinate = (row, col)
-    #                     min_path = path
-    #         if min_coordinate is None:
-    #             return None
-    #         if min_coordinate in target_locations:
-    #
-    #
-    #         visited.add(min_coordinate)
-    #
-    #         row, col = min_coordinate
-    #         for drow, dcol in dirs:
-    #             new_row = row + drow
-    #             new_col = col + dcol
-    #             if not (0 <= new_row < rows and 0 <= new_col < cols):
-    #                 continue
-    #             new_tile = self.board[new_row][new_col]
-    #             if new_tile.get_booth() is None:
-    #                 edge_weight = max(new_tile.get_threshold(), 1)
-    #                 distances[new_row][new_col] = min(distances[new_row][new_col],
-    #                                                   min_distance + edge_weight)
+    def ClosestCompany(self, row, col):
+        target_locations = {c.back_line: c for c in self.unvisited_companies}
 
+        rows, cols = len(self.board), len(self.board[0])
+        distances = [[(math.inf, None)] * cols for _ in range(rows)]
+        distances[row][col] = (0, [])
+        visited = set()
+        dirs = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+
+        while True:
+            min_distance = math.inf
+            min_coordinate = None
+            min_path = None
+            for row in range(rows):
+                for col in range(cols):
+                    distance, path = distances[row][col]
+                    if distance < min_distance and (row, col) not in visited:
+                        min_distance = distance
+                        min_coordinate = (row, col)
+                        min_path = path
+            if min_coordinate is None:
+                break
+
+            visited.add(min_coordinate)
+            row, col = min_coordinate
+            for drow, dcol in dirs:
+                new_row = row + drow
+                new_col = col + dcol
+                if not (0 <= new_row < rows and 0 <= new_col < cols):
+                    continue
+                new_tile = self.board[new_row][new_col]
+                if new_tile.get_booth() is None:
+                    edge_weight = max(self.thresholds[new_row][new_col], 1)
+                    distance, _ = distances[new_row][new_col]
+                    if min_distance + edge_weight < distance:
+                        path = min_path + [(new_row, new_col)]
+                        distances[new_row][new_col] = (min_distance + edge_weight, path)
+
+        max_score = 0
+        best_path = None
+        best_company = None
+        for coordinate in target_locations:
+            company = target_locations[coordinate]
+            row, col = coordinate
+            distance, path = distances[row][col]
+            score = company.size / (distance + company.line_size)
+            if score > max_score:
+                max_score = score
+                best_path = path
+                best_company = company
+        return best_path, best_company
 
     def step(self, visible_board, states, score):
         """
