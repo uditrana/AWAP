@@ -26,26 +26,24 @@ class Company(object):
         return str(self.name)+",  " + str(self.points)+",  "+str(self.lineCoords)+",  "+str(self.boothCoords)+",  "+str(self.front_line)+",  "+str(self.back_line)
         
 def checkFrontOfLine(company, board, row, col):
-    # if board[row][col].is_end_of_line():
-    #     print("FUCK")
-    #     company.front_line=(row,col)
-    # print("RIP")
-    if inBounds(board, row-1, col):
-        if board[row-1][col].get_booth()==company.name:
-            company.front_line=(row,col)
-            return
-    if inBounds(board, row, col-1):
-        if board[row][col-1].get_booth()==company.name:
-            company.front_line=(row,col)
-            return
-    if inBounds(board, row+1, col):
-        if board[row+1][col].get_booth()==company.name:
-            company.front_line=(row,col)
-            return
-    if inBounds(board, row, col+1):
-        if board[row][col+1].get_booth()==company.name:
-            company.front_line=(row,col)
-            return
+    if board[row][col].is_end_of_line():
+        company.front_line=(row,col)
+    # if inBounds(board, row-1, col):
+    #     if board[row-1][col].get_booth()==company.name:
+    #         company.front_line=(row,col)
+    #         return
+    # if inBounds(board, row, col-1):
+    #     if board[row][col-1].get_booth()==company.name:
+    #         company.front_line=(row,col)
+    #         return
+    # if inBounds(board, row+1, col):
+    #     if board[row+1][col].get_booth()==company.name:
+    #         company.front_line=(row,col)
+    #         return
+    # if inBounds(board, row, col+1):
+    #     if board[row][col+1].get_booth()==company.name:
+    #         company.front_line=(row,col)
+    #         return
 
 def checkBackOfLine(company, board, row, col):
     adjLines = 0
@@ -113,11 +111,10 @@ class Team(object):
                     checkFrontOfLine(self.all_companies[company], initial_board, row, col)
                     checkBackOfLine(self.all_companies[company], initial_board, row, col)
                     self.all_companies[company].lineCoords.append((row,col))
-
-
-        print("OG INFO:", company_info)
-        for comp in self.all_companies:
-            print("OBJECT COMPANY:", self.all_companies[comp])    
+                    
+        # print("OG INFO:", company_info)
+        # for comp in self.all_companies:
+        #     print("OBJECT COMPANY:", self.all_companies[comp])    
 
     def BFS(self, row, col):
         target_locations = {c.back_line: c for c in self.unvisited_companies}
