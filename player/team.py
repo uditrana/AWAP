@@ -93,6 +93,7 @@ class Team(object):
 
         self.all_companies = dict()  # compString to compObject
         self.round = 0
+        self.decay = 0.5
 
         for comp in company_info:
             self.all_companies[comp] = Company(comp, company_info[comp])
@@ -137,7 +138,7 @@ class Team(object):
                         self.updateCachedLength(comp, tile, row, col)
 
     def Search(self, row, col, player):
-        target_locations = {c.back_line: c for c in self.unvisited_companies}
+        target_locations = {c.back_line: c for c in self.all_companies_list}
 
         rows, cols = len(self.board), len(self.board[0])
         distances = [[(math.inf, None)] * cols for _ in range(rows)]
@@ -181,7 +182,7 @@ class Team(object):
             company = target_locations[coordinate]
             row, col = coordinate
             distance, path = distances[row][col]
-            if self.round < 20:
+            if self.round < 10:
                 score = company.points / company.cached_line_size
             else:
                 score = company.points / (distance + company.cached_line_size)
@@ -253,22 +254,20 @@ class Team(object):
                     self.current_companies[i] = company
                     if company in self.unvisited_companies:
                         self.unvisited_companies.remove(company)
+                    company.points *= self.decay
                     (next_x, next_y) = path.pop(0)
                     directions.append(get_direction(state.x, state.y, next_x, next_y))
                     state = states[i]
                     continue
                 # getting into line
                 if visible_board[state.x][state.y].is_end_of_line():
-                    print("Case 4")
                     directions.append(Direction.ENTER)
                     state = states[i]
                     continue
                 # moving to end of line
-                print("Case 5")
                 directions.append(get_direct_booth(state.x, state.y, company.front_line[0], company.front_line[1]))
             # haven't reached destination line
             else:
-                print("Case 6")
                 (next_x, next_y) = path.pop(0)
                 directions.append(get_direction(state.x, state.y, next_x, next_y))
             
