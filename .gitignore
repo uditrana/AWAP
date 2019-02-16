@@ -6,3 +6,10 @@
 
 *.vscode
 .vscode
+
+*boards/*
+*logs/*
+logs/tiny-out.txt
+player/__pycache__/__init__.cpython-37.pyc
+player/__pycache__/team.cpython-37.pyc
+player/__pycache__/*
