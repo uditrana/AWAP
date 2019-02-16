@@ -14,6 +14,7 @@ from awap2019 import Tile, Direction, State
 import math
 import copy
 
+
 class Company(object):
     def __init__(self, name, points):
         self.name = name
@@ -210,6 +211,7 @@ class Team(object):
         best_company = None
         for coordinate in target_locations:
             company = target_locations[coordinate]
+            print("company: ", company)
             row, col = coordinate
             distance, path = distances[row][col]
             score = company.points / (distance + company.cached_line_size)
@@ -217,7 +219,10 @@ class Team(object):
                 max_score = score
                 best_path = path
                 best_company = company
-        return best_path, best_company if best_path is None else None
+        print("result: ", best_path, best_company)
+        if best_path is None:
+            return None
+        return best_path, best_company
 
     def step(self, visible_board, states, score):
         """
@@ -268,20 +273,23 @@ class Team(object):
                     state = states[i]
                     continue
                 # just got out of line
+                print(self.at_starts[i])
+                if (not self.at_starts[i]):
+                    print(company.front_line)
+                    print(company.front_line[0])
+                    print(company.front_line[1])
                 if self.at_starts[i] or (state.x == company.front_line[0] and state.y == company.front_line[1]):
                     print("Case 3")
                     self.at_starts[i] = False
                     print(state.x, state.y)
                     bfs_result = self.ClosestCompany(state.x, state.y)
-                    if bfs_result == None:
+                    if bfs_result is None:
+                        print("WAS NONE")
                         self.unvisited_companies = copy.deepcopy(self.all_companies_list)
                         bfs_result = self.ClosestCompany(state.x, state.y)
-                    # print(self.unvisited_companies)
-                    # print(self.all_companies_list)
-                    print(self.all_companies_list)
-                    path, company = bfs_result
                     print("BFS PATH")
-                    print(path)
+                    print(bfs_result)
+                    path, company = bfs_result
                     self.current_paths[i] = path
                     self.current_companies[i] = company
                     if company in self.unvisited_companies:
