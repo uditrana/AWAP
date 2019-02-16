@@ -24,7 +24,7 @@ class Company(object):
         self.front_line = None
         self.back_line = None
         self.cached_line_size = 1
-    
+
     def __repr__(self):
         return str(self.name)+",  " + str(self.points)+",  "+str(self.lineCoords)+",  "+str(self.boothCoords)+",  "+str(self.front_line)+",  "+str(self.back_line)
         
@@ -92,6 +92,7 @@ class Team(object):
         self.cachedThresholds = [[0]*len(initial_board[0]) for _ in range(len(initial_board))]
 
         self.all_companies = dict()  # compString to compObject
+        self.round = 0
 
         for comp in company_info:
             self.all_companies[comp] = Company(comp, company_info[comp])
@@ -108,11 +109,6 @@ class Team(object):
                     checkBackOfLine(self.all_companies[company], initial_board, row, col)
                     self.all_companies[company].lineCoords.append((row,col))
 
-        # print("OG INFO:", company_info)
-        # for comp in self.all_companies:
-        #     print("OBJECT COMPANY:", self.all_companies[comp])   
-
-        # for step
         self.current_paths = [[] for team in range(team_size)]
         self.current_companies = [None for team in range(team_size)]
         self.at_starts = [True for team in range(team_size)]
@@ -140,35 +136,7 @@ class Team(object):
                         comp = tile.get_line()
                         self.updateCachedLength(comp, tile, row, col)
 
-    def BFS(self, row, col):
-        target_locations = {c.back_line: c for c in self.unvisited_companies}
-
-        rows, cols = len(self.board), len(self.board[0])
-        frontier = [(row, col, [])]
-        visited = set((row, col))
-        dirs = [(1, 0), (-1, 0), (0, 1), (0, -1)]
-        while True:
-            if len(frontier) == 0:
-                return None
-            new_frontier = []
-            for row, col, path in frontier:
-                for drow, dcol in dirs:
-                    new_row = row + drow
-                    new_col = col + dcol
-                    if not (0 <= new_row < rows and 0 <= new_col < cols):
-                        continue
-                    new_tile = self.board[new_row][new_col]
-                    is_valid = (new_row, new_col) not in visited
-                    is_valid &= new_tile.get_booth() is None
-                    if is_valid:
-                        new_path = path + [(new_row, new_col)]
-                        if (new_row, new_col) in target_locations:
-                            return new_path, target_locations[(new_row, new_col)]
-                        visited.add((new_row, new_col))
-                        new_frontier.append((new_row, new_col, new_path))
-            frontier = new_frontier
-
-    def ClosestCompany(self, row, col):
+    def Search(self, row, col, player):
         target_locations = {c.back_line: c for c in self.unvisited_companies}
 
         rows, cols = len(self.board), len(self.board[0])
@@ -211,15 +179,16 @@ class Team(object):
         best_company = None
         for coordinate in target_locations:
             company = target_locations[coordinate]
-            print("company: ", company)
             row, col = coordinate
             distance, path = distances[row][col]
-            score = company.points / (distance + company.cached_line_size)
+            if self.round < 20:
+                score = company.points / company.cached_line_size
+            else:
+                score = company.points / (distance + company.cached_line_size)
             if score > max_score:
                 max_score = score
                 best_path = path
                 best_company = company
-        print("result: ", best_path, best_company)
         if best_path is None:
             return None
         return best_path, best_company
@@ -231,6 +200,7 @@ class Team(object):
         For more information on what visible_board, states, and score
         are, please look on the wiki.
         """
+        self.round += 1
         def get_direction(x, y, next_x, next_y):
             if next_x == x - 1:
                 return Direction.UP
@@ -260,7 +230,6 @@ class Team(object):
 
             # getting onto a tile
             if state.progress != 0:
-                print("Case 1")
                 directions.append(state.dir)
                 state = states[i]
                 continue
@@ -268,27 +237,17 @@ class Team(object):
             if len(path) == 0:
                 # in line
                 if state.line_pos != -1:
-                    print("Case 2")
                     directions.append(Direction.NONE)
                     state = states[i]
                     continue
                 # just got out of line
-                print(self.at_starts[i])
-                if (not self.at_starts[i]):
-                    print(company.front_line)
-                    print(company.front_line[0])
-                    print(company.front_line[1])
+
                 if self.at_starts[i] or (state.x == company.front_line[0] and state.y == company.front_line[1]):
-                    print("Case 3")
                     self.at_starts[i] = False
-                    print(state.x, state.y)
-                    bfs_result = self.ClosestCompany(state.x, state.y)
+                    bfs_result = self.Search(state.x, state.y, i)
                     if bfs_result is None:
-                        print("WAS NONE")
                         self.unvisited_companies = copy.deepcopy(self.all_companies_list)
-                        bfs_result = self.ClosestCompany(state.x, state.y)
-                    print("BFS PATH")
-                    print(bfs_result)
+                        bfs_result = self.Search(state.x, state.y, i)
                     path, company = bfs_result
                     self.current_paths[i] = path
                     self.current_companies[i] = company
