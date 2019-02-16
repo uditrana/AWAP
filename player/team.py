@@ -85,14 +85,6 @@ class Team(object):
         self.team_size = team_size
         self.company_info = company_info
 
-        # for step
-        self.current_paths = [[] for team in range(team_size)]
-        self.current_companies = [None for team in range(team_size)]
-        self.at_starts = [True for team in range(team_size)]
-
-        self.all_companies
-        self.unvisited_companies = self.all_companies
-
         self.team_name = "Thanos Did Nothing Wrong"
 
         self.all_companies = dict()  # compString to compObject
@@ -114,7 +106,15 @@ class Team(object):
                     
         # print("OG INFO:", company_info)
         # for comp in self.all_companies:
-        #     print("OBJECT COMPANY:", self.all_companies[comp])    
+        #     print("OBJECT COMPANY:", self.all_companies[comp])   
+
+        # for step
+        self.current_paths = [[] for team in range(team_size)]
+        self.current_companies = [None for team in range(team_size)]
+        self.at_starts = [True for team in range(team_size)]
+
+        self.all_companies_list = list(self.all_companies.values())
+        self.unvisited_companies = self.all_companies_list
 
     def BFS(self, row, col):
         target_locations = {c.back_line: c for c in self.unvisited_companies}
@@ -228,9 +228,12 @@ class Team(object):
                     self.at_starts[i] = False
                     bfs_result = self.BFS(state.x, state.y)
                     if bfs_result == None:
-                        self.unvisited_companies = self.all_companies
+                        self.unvisited_companies = self.all_companies_list
                         bfs_result = self.BFS(state.x, state.y)
-                    (path, company) = bfs_result
+                    print(self.unvisited_companies)
+                    print(self.all_companies_list)
+                    print(bfs_result)
+                    path, company = bfs_result
                     self.current_paths[i] = path
                     self.current_companies[i] = company
                     self.unvisited_companies.remove(company)
@@ -253,7 +256,7 @@ class Team(object):
                 (next_x, next_y) = path.pop(0)
                 directions.append(get_direction(state.x, state.y, next_x, next_y))
             
-	    state = states[i]      
+            state = states[i]      
 
         return directions
                   
