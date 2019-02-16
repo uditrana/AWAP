@@ -29,8 +29,12 @@ class Team(object):
         self.company_info = company_info
 
         # for step
-        self.current_paths
-        self.current_companies
+        self.current_paths = [[] for team in range(team_size)]
+        self.current_companies = [None for team in range(team_size)]
+        self.at_starts = [True for team in range(team_size)]
+
+        self.all_companies
+        self.unvisited_companies = self.all_companies
 
         self.team_name = "Thanos Did Nothing Wrong"
 
@@ -119,11 +123,6 @@ class Team(object):
             elif next_y == y + 1:
                 state.dir = Direction.UP
 
-        def defer(i, state, path, company):
-            states[i] = state
-            self.current_paths[i] = path
-            self.current_companies[i] = company
-
         directions = []
 
         for i in range(len(states)):
@@ -133,44 +132,50 @@ class Team(object):
 
             # getting onto a tile
             if state.progress != 0:
+                print("Case 1")
                 directions.append(state.dir)
-                defer(i, state, path, company)
+                state = states[i]
                 continue
-            # have reached a line, in the process of getting to booth
+            # have reached a line, in the process of getting to booth OR at starting position
             if len(path) == 0:
                 # in line
-                if state.line_pos != 1:
+                if state.line_pos != -1:
+                    print("Case 2")
                     directions.append(Direction.NONE)
-                    defer(i, state, path, company)
+                    state = states[i]
                     continue
                 # just got out of line
-                if state.x == company.front_line[0] && state.y == company.front_line[1]:
-                    bfs_result = bfs(state.x, state.y)
+                if self.at_starts[i] or (state.x == company.front_line[0] and state.y == company.front_line[1]):
+                    print("Case 3")
+                    self.at_starts[i] = False
+                    bfs_result = self.BFS(state.x, state.y)
                     if bfs_result == None:
                         self.unvisited_companies = self.all_companies
-                        bfs_result = bfs(state.x, state.y)
+                        bfs_result = self.BFS(state.x, state.y)
                     (path, company) = bfs_result
                     self.current_paths[i] = path
                     self.current_companies[i] = company
                     self.unvisited_companies.remove(company)
                     (next_x, next_y) = path.pop(0)
                     directions.append(get_direction(state.x, state.y, next_x, next_y))
-                    defer(i, state, path, company)
+                    state = states[i]
                     continue
                 # getting into line
                 if Tile.is_end_of_line():
+                    print("Case 4")
                     directions.append(Direction.ENTER)
-                    defer(i, state, path, company)
+                    state = states[i]
                     continue
                 # moving to end of line
+                print("Case 5")
                 directions.append(get_direction(state.x, state.y, company.front_line[0], company.front_line[1]))
             # haven't reached destination line
             else:
+                print("Case 6")
                 (next_x, next_y) = path.pop(0)
                 directions.append(get_direction(state.x, state.y, next_x, next_y))
 
-            defer(i, state, path, company)
-                
+            state = states[i]      
 
         return directions
                   
