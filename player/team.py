@@ -12,6 +12,7 @@ vnbhatia
 """
 from awap2019 import Tile, Direction, State
 import math
+import copy
 
 class Company(object):
     def __init__(self, name, points):
@@ -114,7 +115,7 @@ class Team(object):
         self.at_starts = [True for team in range(team_size)]
 
         self.all_companies_list = list(self.all_companies.values())
-        self.unvisited_companies = self.all_companies_list
+        self.unvisited_companies = copy.deepcopy(self.all_companies_list)
 
     def BFS(self, row, col):
         target_locations = {c.back_line: c for c in self.unvisited_companies}
@@ -191,15 +192,15 @@ class Team(object):
         For more information on what visible_board, states, and score
         are, please look on the wiki.
         """
-        def get_direction(x, y, dest_x, dest_y):
+        def get_direction(x, y, next_x, next_y):
             if next_x == x - 1:
-                state.dir = Direction.LEFT
+                return Direction.UP
             elif next_x == x + 1:
-                state.dir = Direction.RIGHT
+                return Direction.DOWN
             elif next_y == y - 1:
-                state.dir = Direction.DOWN
+                return Direction.LEFT
             elif next_y == y + 1:
-                state.dir = Direction.UP
+                return Direction.RIGHT
 
         directions = []
 
@@ -226,14 +227,18 @@ class Team(object):
                 if self.at_starts[i] or (state.x == company.front_line[0] and state.y == company.front_line[1]):
                     print("Case 3")
                     self.at_starts[i] = False
+                    print(state.x, state.y)
                     bfs_result = self.BFS(state.x, state.y)
                     if bfs_result == None:
-                        self.unvisited_companies = self.all_companies_list
+                        self.unvisited_companies = copy.deepcopy(self.all_companies_list)
                         bfs_result = self.BFS(state.x, state.y)
-                    print(self.unvisited_companies)
+                    # print(self.unvisited_companies)
+                    # print(self.all_companies_list)
+                    # print(bfs_result)
                     print(self.all_companies_list)
-                    print(bfs_result)
                     path, company = bfs_result
+
+                    print(path)
                     self.current_paths[i] = path
                     self.current_companies[i] = company
                     self.unvisited_companies.remove(company)
@@ -242,7 +247,7 @@ class Team(object):
                     state = states[i]
                     continue
                 # getting into line
-                if Tile.is_end_of_line():
+                if visible_board[state.x][state.y].is_end_of_line():
                     print("Case 4")
                     directions.append(Direction.ENTER)
                     state = states[i]
@@ -256,7 +261,12 @@ class Team(object):
                 (next_x, next_y) = path.pop(0)
                 directions.append(get_direction(state.x, state.y, next_x, next_y))
             
-            state = states[i]      
+            state = states[i] 
+            # print(state.x)
+            # print(state.y) 
+            # print(path)
+            # print(company)    
 
+        print(directions)
         return directions
                   
