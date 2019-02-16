@@ -26,7 +26,7 @@ After having come up with some general guidelines, it's now your time to impleme
 
 ## Installation
 
-Before installation, make sure that you have Python 3.x and pip. Clone this repository into your working directory, then run
+Before installation, make sure that you have Python 3.7.1 and pip. Clone this repository into your working directory, then run
 ```
 cd awap
 pip install awap2019
@@ -37,6 +37,8 @@ If you have any problems installing, please ping us on Slack.
 
 ### Notes
 We suggest using a virtual environment such as Anaconda/Miniconda to do most of your work. We have not tested how our module interacts with other Python modules (especially ones that aid in reading command line arguments). If you need would like to set up a virtual environment and require help, please ping us on Slack.
+
+We are currently having troubles getting the visualizer to work with older Python versions. Thus, we suggest that you use Python 3.7.1.
 
 ## Documentation/Reference
 Please refer to the wiki for information regarding the classes in the `awap2019` module.
