@@ -202,6 +202,16 @@ class Team(object):
             elif next_y == y + 1:
                 return Direction.RIGHT
 
+        def get_direct_booth(x, y, next_x, next_y):
+            if next_x < x:
+                return Direction.UP
+            elif next_x > x:
+                return Direction.DOWN
+            elif next_y < y:
+                return Direction.LEFT
+            elif next_y > y:
+                return Direction.RIGHT
+
         directions = []
 
         for i in range(len(states)):
@@ -234,10 +244,9 @@ class Team(object):
                         bfs_result = self.BFS(state.x, state.y)
                     # print(self.unvisited_companies)
                     # print(self.all_companies_list)
-                    # print(bfs_result)
                     print(self.all_companies_list)
                     path, company = bfs_result
-
+                    print("BFS PATH")
                     print(path)
                     self.current_paths[i] = path
                     self.current_companies[i] = company
@@ -254,7 +263,7 @@ class Team(object):
                     continue
                 # moving to end of line
                 print("Case 5")
-                directions.append(get_direction(state.x, state.y, company.front_line[0], company.front_line[1]))
+                directions.append(get_direct_booth(state.x, state.y, company.front_line[0], company.front_line[1]))
             # haven't reached destination line
             else:
                 print("Case 6")
