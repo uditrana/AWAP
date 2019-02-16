@@ -22,6 +22,7 @@ class Company(object):
         self.boothCoords = []
         self.front_line = None
         self.back_line = None
+        self.cached_line_size = None
     
     def __repr__(self):
         return str(self.name)+",  " + str(self.points)+",  "+str(self.lineCoords)+",  "+str(self.boothCoords)+",  "+str(self.front_line)+",  "+str(self.back_line)
@@ -87,6 +88,7 @@ class Team(object):
         self.company_info = company_info
 
         self.team_name = "Thanos Did Nothing Wrong"
+        self.cachedThresholds = [[0]*len(initial_board[0]) for _ in range(len(initial_board))]
 
         self.all_companies = dict()  # compString to compObject
 
@@ -104,7 +106,7 @@ class Team(object):
                     checkFrontOfLine(self.all_companies[company], initial_board, row, col)
                     checkBackOfLine(self.all_companies[company], initial_board, row, col)
                     self.all_companies[company].lineCoords.append((row,col))
-                    
+
         # print("OG INFO:", company_info)
         # for comp in self.all_companies:
         #     print("OBJECT COMPANY:", self.all_companies[comp])   
@@ -116,6 +118,26 @@ class Team(object):
 
         self.all_companies_list = list(self.all_companies.values())
         self.unvisited_companies = copy.deepcopy(self.all_companies_list)
+
+    def updateCachedLength(self, comp, tile, row, col):
+        if self.all_companies[comp].back_line == (row, col):
+            lineLength = len(self.all_companies[comp].lineCoords)
+            self.all_companies[comp].cached_line_size = tile.get_num_bots() + (lineLength-1)*3
+        else:
+            (r1, c1) = self.all_companies[comp].front_line
+            dist = max(abs(row-r1), abs(col-c1))
+            self.all_companies[comp].cached_line_size = min(tile.get_num_bots(), 3) + 3*dist
+
+    def updateCachedThresholds(self, visible_board, states):
+        for row in len(visible_board):
+            for col in len(visible_board[0]):
+                tile = visible_board[row][col]
+                if tile.is_visible():
+                    self.cachedThresholds[row][col]=tile.get_threshold()
+                    
+                    if tile.is_end_of_line():
+                        comp = tile.get_line()
+                        self.updateCachedLength(comp, tile, row, col)
 
     def BFS(self, row, col):
         target_locations = {c.back_line: c for c in self.unvisited_companies}
